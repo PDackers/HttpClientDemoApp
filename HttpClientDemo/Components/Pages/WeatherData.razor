@@ -1,0 +1,66 @@
+@page "/weatherapidemo"
+
+@inject IHttpClientFactory ClientFactory
+
+<h3>Weather Data</h3>
+
+@if (!string.IsNullOrWhiteSpace(_errorMessage))
+{
+    <div class="h2">@_errorMessage</div>
+}
+else if (_forecast == null)
+{
+    <div class="h4">Loading...</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead class="bg-dark">
+        <tr>
+            <th>Timezone</th>
+            <th>Current Time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>@_forecast.timezone</td>
+            <td>@_forecast.current.time</td>
+        </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    WeatherForecastModel? _forecast;
+    string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // var request = new HttpRequestMessage(HttpMethod.Get, "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m");
+        //
+        // var client = ClientFactory.CreateClient();
+        //
+        // HttpResponseMessage response = await client.SendAsync(request);
+        //
+        // if (response.IsSuccessStatusCode)
+        // {
+        //     _forecast = await response.Content.ReadFromJsonAsync<WeatherForecastModel>();
+        //     _errorMessage = null;
+        // }
+        // else
+        // {
+        //     _errorMessage = $"There was an error, sorry. { response.ReasonPhrase }";
+        // }
+
+        var client = ClientFactory.CreateClient("WD");
+
+        try
+        {
+            _forecast = await client.GetFromJsonAsync<WeatherForecastModel>("forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m");
+        }
+        catch (Exception exception)
+        {
+            _errorMessage = $"There was an error, sorry. { exception.Message }";
+        }
+    }
+}
